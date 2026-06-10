@@ -44,6 +44,7 @@
 
 import logo from "../assets/logo.jpeg";
 import { Link } from "react-router-dom";
+//import ScrollToTopButton from "./ScrollToTopButton";
 
 import {
   FaPhoneAlt,
@@ -179,7 +180,7 @@ function Footer() {
           © 2026 Enlightened Bharat Gurukul. All Rights Reserved.
         </p>
 
-        <div className="flex gap-6 mt-4 md:mt-0">
+        <div className="flex gap-6 mt-4 md:mt-0 items-center">
           <Link
             to="/privacy-policy"
             className="text-gray-500 hover:text-yellow-400 duration-300"
@@ -193,8 +194,22 @@ function Footer() {
           >
             Terms & Conditions
           </Link>
+
+          <button
+            onClick={() =>
+              window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+              })
+            }
+            className="w-10 h-10 rounded-full bg-yellow-400 text-black font-bold flex items-center justify-center hover:scale-110 duration-300"
+            aria-label="Back to top"
+          >
+            ↑
+          </button>
         </div>
       </div>
+    
     </footer>
   );
 }
