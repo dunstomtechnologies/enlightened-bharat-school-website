@@ -3,7 +3,7 @@ import { FaEnvelope } from "react-icons/fa";
 
 const founders = [
   {
-    name: "Dr. Rajesh Sharma",
+    name: "Durgesh Nandan",
     role: "Co-Founder & Academic Director",
     credentials: "IIT Kharagpur • Ex-Microsoft • Ex-Amazon",
     bio: "Dr. Sharma spent 15+ years leading software engineering divisions at Microsoft and Amazon in Seattle. Believing that modern technical capabilities must be built on top of deep concentration and character, he returned to India to pioneer a Gurukul system that prepares students for global challenges.",
@@ -11,7 +11,7 @@ const founders = [
     email: "rajesh.sharma@enlightenedbharat.com"
   },
   {
-    name: "Anuj Keshav",
+    name: "Tushar Nene",
     role: "Co-Founder & Managing Trustee",
     credentials: "IIT Delhi • Ex-Ford • Systems Director",
     bio: "Anuj brings extensive experience in large-scale operations and engineering leadership from Ford and global technology firms. At Enlightened Bharat, he focuses on integrating operational discipline, structural excellence, and Vedic values into our daily tracking systems.",
