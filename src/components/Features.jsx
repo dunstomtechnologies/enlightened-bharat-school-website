@@ -1,3 +1,5 @@
+import ParentTrust from "./ParentTrust";
+
 function Features() {
 
   return (
@@ -163,6 +165,9 @@ function Features() {
           </div>
 
         </div>
+
+        {/* Parent Trust Section */}
+        <ParentTrust />
 
       </div>
 

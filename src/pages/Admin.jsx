@@ -171,11 +171,12 @@ function Admin() {
   // =========================
 
   useEffect(() => {
-
-    fetchStudents()
-    fetchGalleryCount()
-
-  }, [])
+    const timer = setTimeout(() => {
+      fetchStudents();
+      fetchGalleryCount();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   // =========================
   // SEARCH FILTER (Frontend Only)
@@ -235,7 +236,10 @@ function Admin() {
 
   // Reset page when search changes
   useEffect(() => {
-    setCurrentPage(1)
+    const timer = setTimeout(() => {
+      setCurrentPage(1);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [searchQuery])
 
   // =========================
@@ -311,10 +315,10 @@ function Admin() {
   }
 
   // =========================
-  // SORT ICON HELPER
+  // SORT ICON HELPER (Function call to avoid nested component rendering)
   // =========================
 
-  const SortIcon = ({ field }) => (
+  const renderSortIcon = (field) => (
     <span className="inline-flex flex-col ml-1.5 -space-y-1">
       <svg className={`w-3 h-3 ${sortField === field && sortDirection === "asc" ? "text-yellow-400" : "text-gray-600"}`} viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z" /></svg>
       <svg className={`w-3 h-3 ${sortField === field && sortDirection === "desc" ? "text-yellow-400" : "text-gray-600"}`} viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z" /></svg>
@@ -322,11 +326,11 @@ function Admin() {
   )
 
   // =========================
-  // SKELETON ROW COMPONENT
+  // SKELETON ROW HELPER (Function call to avoid nested component rendering)
   // =========================
 
-  const SkeletonRow = () => (
-    <tr className="border-b border-white/[0.06]">
+  const renderSkeletonRow = (key) => (
+    <tr key={key} className="border-b border-white/[0.06]">
       {[...Array(6)].map((_, i) => (
         <td key={i} className="py-4 px-5">
           <div className="h-4 bg-white/[0.06] rounded-lg animate-pulse" style={{ width: i === 5 ? "60px" : `${60 + Math.random() * 40}%` }}></div>
@@ -654,7 +658,7 @@ function Admin() {
                       onClick={() => handleSort("student_name")}
                       className="py-4 px-5 text-xs uppercase tracking-wider text-gray-400 font-semibold whitespace-nowrap cursor-pointer hover:text-gray-200 transition-colors select-none"
                     >
-                      Student Name <SortIcon field="student_name" />
+                      Student Name {renderSortIcon("student_name")}
                     </th>
                     <th className="py-4 px-5 text-xs uppercase tracking-wider text-gray-400 font-semibold whitespace-nowrap">
                       Father Name
@@ -672,7 +676,7 @@ function Admin() {
                       onClick={() => handleSort("createdAt")}
                       className="py-4 px-5 text-xs uppercase tracking-wider text-gray-400 font-semibold whitespace-nowrap cursor-pointer hover:text-gray-200 transition-colors select-none"
                     >
-                      Date <SortIcon field="createdAt" />
+                      Date {renderSortIcon("createdAt")}
                     </th>
                     <th className="py-4 px-5 text-xs uppercase tracking-wider text-gray-400 font-semibold whitespace-nowrap text-center">
                       Actions
@@ -684,7 +688,7 @@ function Admin() {
 
                   {loading ? (
                     // Skeleton Loading
-                    [...Array(5)].map((_, i) => <SkeletonRow key={i} />)
+                    [...Array(5)].map((_, i) => renderSkeletonRow(i))
                   ) : paginatedStudents.length > 0 ? (
 
                     paginatedStudents.map((student, index) => (

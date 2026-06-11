@@ -105,10 +105,11 @@ function Gallery() {
   }
 
   useEffect(() => {
-
-    fetchGallery()
-
-  }, [])
+    const timer = setTimeout(() => {
+      fetchGallery();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
 

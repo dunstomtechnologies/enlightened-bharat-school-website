@@ -1,4 +1,3 @@
-import schoolImage3 from "../assets/school3.jpeg"
 function GalleryCard({ image, title, description }) {
   return (
 
