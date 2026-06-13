@@ -1,14 +1,21 @@
+import { useEffect } from "react";
+
 function PrivacyPolicy() {
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, []);
+
   return (
     <div className="bg-black min-h-screen text-white px-6 py-20">
       <div className="max-w-5xl mx-auto">
-
         <h1 className="text-5xl font-bold text-yellow-400 mb-10">
           Privacy Policy
         </h1>
 
         <div className="space-y-8 text-gray-300 leading-8">
-
           <p>
             At Enlightened Bharat Gurukul, we value and respect your privacy.
             This Privacy Policy explains how we collect, use and protect
@@ -21,9 +28,9 @@ function PrivacyPolicy() {
             </h2>
 
             <p>
-              We may collect personal information such as name, email
-              address, phone number, admission details and other information
-              voluntarily submitted through our website.
+              We may collect personal information such as name, email address,
+              phone number, admission details and other information voluntarily
+              submitted through our website.
             </p>
           </div>
 
@@ -61,9 +68,7 @@ function PrivacyPolicy() {
               info@enlightenedbharat.com.
             </p>
           </div>
-
         </div>
-
       </div>
     </div>
   );
