@@ -1,14 +1,33 @@
 
 
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { db, storage } from "../firebase"
 import { collection, getDocs, deleteDoc, doc, addDoc, serverTimestamp } from "firebase/firestore"
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage"
+import { useAuth } from "../context/AuthContext"
 
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 
 function Admin() {
+
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+    try {
+      await logout()
+      navigate("/enlightened-bharat-admin-portal")
+    } catch (error) {
+      console.error("Logout failed:", error)
+      toast.error("Failed to logout. Please try again.")
+      setIsLoggingOut(false)
+    }
+  }
 
   const [students, setStudents] = useState([])
 
@@ -480,6 +499,33 @@ function Admin() {
 
         {/* ========== HEADING ========== */}
         <div className="text-center mb-12">
+
+          {/* Logout Button */}
+          <div className="flex justify-end mb-6">
+            <button
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="flex items-center gap-2 bg-white/[0.06] hover:bg-red-500/15 border border-white/10 hover:border-red-500/30 text-gray-400 hover:text-red-400 px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-300 active:scale-[0.97]"
+            >
+              {isLoggingOut ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Logging out...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Logout
+                </>
+              )}
+            </button>
+          </div>
+
           <p className="text-yellow-400 tracking-[5px] uppercase text-xs md:text-sm font-semibold">Enlightened Bharat</p>
           <h1 className="text-white text-4xl md:text-5xl lg:text-6xl font-bold mt-4 leading-tight">Admin Dashboard</h1>
           <p className="text-gray-400 mt-4 text-base md:text-lg max-w-2xl mx-auto">
