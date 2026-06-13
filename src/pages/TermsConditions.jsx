@@ -1,17 +1,25 @@
-function TermsConditions() {
+import { useEffect } from "react";
+
+function TermsAndConditions() {
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, []);
+
   return (
     <div className="bg-black min-h-screen text-white px-6 py-20">
       <div className="max-w-5xl mx-auto">
-
         <h1 className="text-5xl font-bold text-yellow-400 mb-10">
           Terms & Conditions
         </h1>
 
         <div className="space-y-8 text-gray-300 leading-8">
-
           <p>
-            By accessing and using Enlightened Bharat Gurukul's website,
-            you agree to comply with the following terms and conditions.
+            Welcome to Enlightened Bharat Gurukul. By accessing and using our
+            website, you agree to comply with and be bound by the following
+            terms and conditions.
           </p>
 
           <div>
@@ -20,9 +28,9 @@ function TermsConditions() {
             </h2>
 
             <p>
-              Users agree to use this website for lawful purposes only and
-              not engage in any activity that may harm the institution or
-              other users.
+              The content provided on this website is for informational and
+              educational purposes only. Users must use the website lawfully
+              and responsibly.
             </p>
           </div>
 
@@ -32,20 +40,21 @@ function TermsConditions() {
             </h2>
 
             <p>
-              All content including text, images, logos and educational
-              materials belongs to Enlightened Bharat Gurukul and may not be
-              copied without permission.
+              All content, logos, images, text, and materials available on this
+              website are the property of Enlightened Bharat Gurukul and may
+              not be copied, reproduced, or distributed without permission.
             </p>
           </div>
 
           <div>
             <h2 className="text-2xl font-semibold text-white mb-3">
-              Accuracy of Information
+              Limitation of Liability
             </h2>
 
             <p>
-              We strive to keep all information accurate and updated, however
-              we do not guarantee complete accuracy at all times.
+              We strive to keep the information accurate and updated, but we do
+              not guarantee the completeness, reliability, or accuracy of any
+              content on this website.
             </p>
           </div>
 
@@ -55,16 +64,25 @@ function TermsConditions() {
             </h2>
 
             <p>
-              We reserve the right to modify these terms at any time without
-              prior notice.
+              Enlightened Bharat Gurukul reserves the right to modify these
+              terms and conditions at any time without prior notice.
             </p>
           </div>
 
-        </div>
+          <div>
+            <h2 className="text-2xl font-semibold text-white mb-3">
+              Contact Us
+            </h2>
 
+            <p>
+              If you have any questions regarding these Terms & Conditions,
+              please contact us at info@enlightenedbharat.com.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-export default TermsConditions;
+export default TermsAndConditions;
