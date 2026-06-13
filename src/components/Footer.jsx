@@ -97,17 +97,30 @@ function Footer() {
           </h3>
 
           <ul className="space-y-4">
-            {["Home", "About", "Academics", "Gallery", "Contact"].map(
-              (item) => (
-                <li key={item} className="group cursor-pointer w-fit">
-                  <span className="text-gray-400 group-hover:text-yellow-400 duration-300">
-                    {item}
-                  </span>
+            {[
+              { name: "Home", path: "/" },
+              { name: "About", path: "/about" },
+              { name: "Academics", path: "/academics" },
+              { name: "Gallery", path: "/gallery" },
+              { name: "Contact", path: "/contact" },
+            ].map((item) => (
+              <li key={item.name} className="group w-fit">
+                <Link
+                  to={item.path}
+                  onClick={() =>
+                    window.scrollTo({
+                      top: 0,
+                      behavior: "smooth",
+                    })
+                  }
+                  className="text-gray-400 group-hover:text-yellow-400 duration-300"
+                >
+                  {item.name}
+                </Link>
 
-                  <div className="w-0 h-[2px] bg-yellow-400 group-hover:w-full duration-300"></div>
-                </li>
-              ),
-            )}
+                <div className="w-0 h-[2px] bg-yellow-400 group-hover:w-full duration-300"></div>
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -209,7 +222,6 @@ function Footer() {
           </button>
         </div>
       </div>
-    
     </footer>
   );
 }
