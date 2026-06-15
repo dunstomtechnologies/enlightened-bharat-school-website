@@ -17,6 +17,7 @@ import AboutPage from "./pages/AboutPage";
 import Academics from "./pages/Academics";
 import Admissions from "./pages/Admissions";
 import Admin from "./pages/Admin";
+import Contact from "./pages/Contact";
 
 // Admin Auth Pages
 import AdminLogin from "./pages/AdminLogin";
@@ -25,15 +26,8 @@ import ForgotPassword from "./pages/ForgotPassword";
 // New Pages
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsConditions from "./pages/TermsConditions";
+import Campus from "./pages/Campus";
 
-// Contact Page
-function ContactPage() {
-  return (
-    <div className="pt-32">
-      <CTA />
-    </div>
-  );
-}
 
 // App Content (needs useLocation inside BrowserRouter)
 function AppContent() {
@@ -65,10 +59,13 @@ function AppContent() {
         <Route path="/academics" element={<Academics />} />
 
         {/* Contact */}
-        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/contact" element={<Contact />} />
 
         {/* Admissions */}
         <Route path="/admissions" element={<Admissions />} />
+
+        {/* Campus */}
+        <Route path="/campus" element={<Campus />} />
 
         {/* Legacy Admin Redirect */}
         <Route path="/admin" element={<Navigate to="/enlightened-bharat-admin-portal" replace />} />
