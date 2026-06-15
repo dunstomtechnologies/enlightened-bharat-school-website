@@ -1,166 +1,144 @@
 function Contact() {
-
   return (
+    <div className="bg-[#061224] text-white min-h-screen">
 
-    <div className="bg-[#061224] text-white overflow-hidden">
+      {/* Hero */}
+      <section className="pt-40 pb-24 text-center px-6">
 
-      {/* Hero Section */}
-      <section className="relative h-[60vh] flex items-center justify-center">
+        <p className="text-yellow-400 tracking-[5px] uppercase mb-4 font-semibold">
+          Get In Touch
+        </p>
 
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-[#061224]"></div>
+        <h1 className="text-5xl md:text-6xl font-bold">
+          Contact Us
+        </h1>
 
-        <div className="relative z-10 text-center px-6 max-w-5xl">
-
-          <p className="text-yellow-400 tracking-[5px] uppercase mb-5">
-
-            Contact Us
-
-          </p>
-
-          <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-
-            Connect With
-            <span className="block text-yellow-400">
-
-              Enlightened Bharat
-
-            </span>
-
-          </h1>
-
-        </div>
+        <p className="text-gray-400 mt-6 text-lg max-w-2xl mx-auto">
+          Have questions? We are here to help and guide you through every step.
+        </p>
 
       </section>
 
-      {/* Contact Section */}
-      <section className="max-w-7xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-16">
+      {/* Contact Cards */}
+      <section className="max-w-6xl mx-auto px-6">
 
-        {/* Left Info */}
-        <div>
+        <div className="grid md:grid-cols-3 gap-8">
 
-          <p className="text-yellow-400 tracking-[4px] uppercase mb-4">
+          {/* Email */}
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 text-center backdrop-blur-xl hover:border-yellow-400 transition-all duration-300">
 
-            Get In Touch
-
-          </p>
-
-          <h2 className="text-4xl md:text-6xl font-bold leading-tight">
-
-            We Would Love
-            <span className="block text-yellow-400">
-
-              To Hear From You
-
-            </span>
-
-          </h2>
-
-          <p className="text-gray-300 mt-8 text-lg leading-9">
-
-            Contact us for admissions, campus visits,
-            academic information or any other queries.
-            Our team will be happy to assist you.
-
-          </p>
-
-          {/* Contact Cards */}
-          <div className="mt-12 space-y-6">
-
-            <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-6 rounded-2xl">
-
-              <h3 className="text-yellow-400 text-2xl font-bold mb-3">
-
-                Address
-
-              </h3>
-
-              <p className="text-gray-300 leading-8">
-
-                Enlightened Bharat Gurukul,
-                Uttar Pradesh, India
-
-              </p>
-
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-yellow-400 text-black flex items-center justify-center text-2xl font-bold mb-6">
+              ✉
             </div>
 
-            <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-6 rounded-2xl">
+            <h3 className="text-2xl font-bold mb-3">
+              Email Us
+            </h3>
 
-              <h3 className="text-yellow-400 text-2xl font-bold mb-3">
+            <p className="text-yellow-400">
+              info@enlightenedbharat.com
+            </p>
 
-                Phone
+            <p className="text-gray-400 mt-3">
+              We respond within 24 hours
+            </p>
 
-              </h3>
+          </div>
 
-              <p className="text-gray-300 leading-8">
+          {/* Call */}
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 text-center backdrop-blur-xl hover:border-yellow-400 transition-all duration-300">
 
-                +91 9876543210
-
-              </p>
-
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-yellow-400 text-black flex items-center justify-center text-2xl font-bold mb-6">
+              ☎
             </div>
 
-            <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-6 rounded-2xl">
+            <h3 className="text-2xl font-bold mb-3">
+              Call Us
+            </h3>
 
-              <h3 className="text-yellow-400 text-2xl font-bold mb-3">
+            <p className="text-yellow-400">
+              +91 9876543210
+            </p>
 
-                Email
+            <p className="text-gray-400 mt-3">
+              Monday to Saturday
+            </p>
 
-              </h3>
+          </div>
 
-              <p className="text-gray-300 leading-8">
+          {/* Visit */}
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 text-center backdrop-blur-xl hover:border-yellow-400 transition-all duration-300">
 
-                info@enlightenedbharat.com
-
-              </p>
-
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-yellow-400 text-black flex items-center justify-center text-2xl font-bold mb-6">
+              📍
             </div>
+
+            <h3 className="text-2xl font-bold mb-3">
+              Visit Us
+            </h3>
+
+            <p className="text-yellow-400">
+              Uttar Pradesh, India
+            </p>
+
+            <p className="text-gray-400 mt-3">
+              Enlightened Bharat Gurukul
+            </p>
 
           </div>
 
         </div>
 
-        {/* Contact Form */}
-        <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-8 md:p-10 rounded-3xl">
+      </section>
 
-          <h2 className="text-4xl font-bold mb-8">
+      {/* Contact Form */}
+      <section className="max-w-4xl mx-auto px-6 py-24">
 
-            Send Message
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 md:p-12 backdrop-blur-xl">
 
+          <h2 className="text-4xl font-bold text-center">
+            Send Us a Message
           </h2>
+
+          <p className="text-gray-400 text-center mt-4 mb-10">
+            Fill out the form below and we will get back to you shortly.
+          </p>
 
           <form className="space-y-6">
 
-            <input
-              type="text"
-              placeholder="Your Name"
-              className="w-full bg-black/20 border border-white/10 rounded-xl px-5 py-4 outline-none focus:border-yellow-400"
-            />
+            <div className="grid md:grid-cols-2 gap-6">
+
+              <input
+                type="text"
+                placeholder="Full Name"
+                className="w-full bg-black/20 border border-white/10 rounded-xl px-5 py-4 outline-none focus:border-yellow-400"
+              />
+
+              <input
+                type="email"
+                placeholder="Email Address"
+                className="w-full bg-black/20 border border-white/10 rounded-xl px-5 py-4 outline-none focus:border-yellow-400"
+              />
+
+            </div>
 
             <input
-              type="email"
-              placeholder="Your Email"
-              className="w-full bg-black/20 border border-white/10 rounded-xl px-5 py-4 outline-none focus:border-yellow-400"
-            />
-
-            <input
               type="text"
-              placeholder="Phone Number"
+              placeholder="Subject"
               className="w-full bg-black/20 border border-white/10 rounded-xl px-5 py-4 outline-none focus:border-yellow-400"
             />
 
             <textarea
-              rows="5"
-              placeholder="Your Message"
+              rows="6"
+              placeholder="Tell us more about your query..."
               className="w-full bg-black/20 border border-white/10 rounded-xl px-5 py-4 outline-none focus:border-yellow-400"
-            ></textarea>
+            />
 
             <button
               type="submit"
               className="w-full bg-yellow-400 text-black py-4 rounded-xl font-semibold hover:scale-[1.02] duration-300"
             >
-
               Send Message
-
             </button>
 
           </form>
@@ -169,8 +147,8 @@ function Contact() {
 
       </section>
 
-      {/* Google Map */}
-      <section className="max-w-7xl mx-auto px-6 pb-24">
+      {/* Map */}
+      <section className="max-w-6xl mx-auto px-6 pb-24">
 
         <div className="rounded-3xl overflow-hidden border border-white/10">
 
@@ -179,10 +157,8 @@ function Contact() {
             width="100%"
             height="450"
             style={{ border: 0 }}
-            allowFullScreen=""
             loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            title="map"
+            title="Campus Location"
           ></iframe>
 
         </div>
@@ -190,9 +166,7 @@ function Contact() {
       </section>
 
     </div>
-
-  )
-
+  );
 }
 
-export default Contact
+export default Contact;
