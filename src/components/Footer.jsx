@@ -65,26 +65,28 @@ function Footer() {
 
       <div className="relative max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
         {/* Logo Section */}
+
         <div>
           <div className="flex items-center gap-4">
-            <img
-              src={logo}
-              alt="logo"
-              className="w-16 h-16 rounded-full object-cover border border-yellow-400/40"
-            />
+            <div className="w-16 h-16 flex-shrink-0">
+              <img
+                src={logo}
+                alt="Enlightened Bharat Logo"
+                className="w-full h-full object-contain"
+              />
+            </div>
 
             <div>
-              <h2 className="text-white text-2xl font-bold">
+              <h2 className="text-white text-2xl font-bold leading-tight">
                 Enlightened Bharat
               </h2>
 
-              <p className="text-yellow-400 tracking-[4px] uppercase text-xs mt-1">
+              <p className="text-yellow-400 tracking-[3px] uppercase text-xs mt-1">
                 Gurukul
               </p>
             </div>
           </div>
-
-          <p className="text-gray-400 leading-8 mt-6">
+          <p className="text-gray-400 leading-8 mt-8 max-w-md">
             Modern Education with Vedic values. Building future-ready leaders
             through wisdom, discipline, character and excellence.
           </p>
