@@ -1,6 +1,80 @@
+import { useState } from "react"
+import { db } from "../firebase"
+import { collection, addDoc, serverTimestamp } from "firebase/firestore"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+
 function Contact() {
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    subject: "",
+    message: ""
+  })
+
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    // Basic validation
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      toast.warn("Please fill in Name, Email and Message fields")
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      await addDoc(collection(db, "contacts"), {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        subject: formData.subject.trim(),
+        message: formData.message.trim(),
+        createdAt: serverTimestamp()
+      })
+
+      toast.success("Message sent successfully!")
+
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        subject: "",
+        message: ""
+      })
+    } catch (error) {
+      console.error("Error sending message:", error)
+      toast.error("Failed to send message. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <div className="bg-[#061224] text-white min-h-screen">
+
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss={false}
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
 
       {/* Hero */}
       <section className="pt-40 pb-24 text-center px-6">
@@ -104,41 +178,67 @@ function Contact() {
             Fill out the form below and we will get back to you shortly.
           </p>
 
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
 
             <div className="grid md:grid-cols-2 gap-6">
 
               <input
                 type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
                 placeholder="Full Name"
                 className="w-full bg-black/20 border border-white/10 rounded-xl px-5 py-4 outline-none focus:border-yellow-400"
               />
 
               <input
                 type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
                 placeholder="Email Address"
                 className="w-full bg-black/20 border border-white/10 rounded-xl px-5 py-4 outline-none focus:border-yellow-400"
               />
 
             </div>
 
-            <input
-              type="text"
-              placeholder="Subject"
-              className="w-full bg-black/20 border border-white/10 rounded-xl px-5 py-4 outline-none focus:border-yellow-400"
-            />
+            <div className="grid md:grid-cols-2 gap-6">
+
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Phone Number"
+                className="w-full bg-black/20 border border-white/10 rounded-xl px-5 py-4 outline-none focus:border-yellow-400"
+              />
+
+              <input
+                type="text"
+                name="subject"
+                value={formData.subject}
+                onChange={handleChange}
+                placeholder="Subject"
+                className="w-full bg-black/20 border border-white/10 rounded-xl px-5 py-4 outline-none focus:border-yellow-400"
+              />
+
+            </div>
 
             <textarea
               rows="6"
+              name="message"
+              value={formData.message}
+              onChange={handleChange}
               placeholder="Tell us more about your query..."
               className="w-full bg-black/20 border border-white/10 rounded-xl px-5 py-4 outline-none focus:border-yellow-400"
             />
 
             <button
               type="submit"
-              className="w-full bg-yellow-400 text-black py-4 rounded-xl font-semibold hover:scale-[1.02] duration-300"
+              disabled={isSubmitting}
+              className={`w-full py-4 rounded-xl font-semibold duration-300 ${isSubmitting ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-yellow-400 text-black hover:scale-[1.02]"}`}
             >
-              Send Message
+              {isSubmitting ? "Sending..." : "Send Message"}
             </button>
 
           </form>

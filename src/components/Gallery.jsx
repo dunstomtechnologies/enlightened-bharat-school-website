@@ -57,8 +57,6 @@
 //             />
 //             ))
 //             }
-          
-       
 
 //         </div>
 //       </section>
@@ -66,43 +64,36 @@
 // }
 // export default Gallery
 
+import { useEffect, useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination } from "swiper/modules";
 
+import "swiper/css";
+import "swiper/css/pagination";
 
-
-
-import { useEffect, useState } from "react"
-import { Swiper, SwiperSlide } from "swiper/react"
-import { Autoplay, Pagination } from "swiper/modules"
-
-import "swiper/css"
-import "swiper/css/pagination"
-
-import { db } from "../firebase"
-import { collection, getDocs, query, orderBy } from "firebase/firestore"
+import { db } from "../firebase";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 
 function Gallery() {
-
-  const [images, setImages] = useState([])
+  const [images, setImages] = useState([]);
 
   // =========================
   // FETCH GALLERY IMAGES
   // =========================
 
   const fetchGallery = async () => {
-
     try {
       const q = query(collection(db, "gallery"), orderBy("createdAt", "desc"));
       const querySnapshot = await getDocs(q);
-      const fetchedImages = querySnapshot.docs.map(doc => ({
+      const fetchedImages = querySnapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
       setImages(fetchedImages);
     } catch (error) {
       console.log(error);
     }
-
-  }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -112,86 +103,54 @@ function Gallery() {
   }, []);
 
   return (
-
-    <section
-      id="gallery"
-      className="bg-[#061224] py-24 px-6 overflow-hidden"
-    >
-
+    <section id="gallery" className="bg-[#061224] py-24 px-6 overflow-hidden">
       <div className="max-w-7xl mx-auto">
-
+        
         {/* Sanskrit Strip */}
         <div className="text-center mb-20">
-
-          <h2 className="text-yellow-400 text-3xl md:text-5xl font-bold tracking-[8px] drop-shadow-[0_0_25px_rgba(250,204,21,0.6)]">
-
+          <h2 className="text-yellow-400 text-5xl font-semibold tracking-normal">
             ॥ सा विद्या या विमुक्तये ॥
-
           </h2>
 
           <p className="text-gray-400 mt-6 text-lg tracking-[3px]">
-
             True Knowledge Liberates The Soul
-
           </p>
 
           <div className="w-40 h-[2px] bg-yellow-400 mx-auto mt-6 rounded-full"></div>
-
         </div>
 
         {/* Heading */}
         <div className="text-center max-w-3xl mx-auto">
-
           <p className="text-yellow-400 tracking-[5px] uppercase text-sm font-semibold mb-4">
-
             Campus Gallery
-
           </p>
 
           <h2 className="text-white text-4xl md:text-6xl font-bold leading-tight">
-
             Explore Our
-            <span className="block text-yellow-400">
-
-              Modern Gurukul Campus
-
-            </span>
-
+            <span className="block text-yellow-400">Modern Gurukul Campus</span>
           </h2>
 
           <p className="text-gray-300 mt-8 text-lg leading-9">
-
-            Experience the vibrant learning environment,
-            smart classrooms, sports facilities and holistic campus life.
-
+            Experience the vibrant learning environment, smart classrooms,
+            sports facilities and holistic campus life.
           </p>
-
         </div>
 
         {/* Slider */}
         <div className="mt-20">
-
           <Swiper
-
             modules={[Autoplay, Pagination]}
-
             spaceBetween={30}
-
             slidesPerView={1}
-
             loop={true}
-
             autoplay={{
               delay: 2500,
               disableOnInteraction: false,
             }}
-
             pagination={{
               clickable: true,
             }}
-
             breakpoints={{
-
               768: {
                 slidesPerView: 2,
               },
@@ -199,63 +158,36 @@ function Gallery() {
               1024: {
                 slidesPerView: 3,
               },
-
             }}
-
           >
+            {images.map((image) => (
+              <SwiperSlide key={image.id}>
+                <div className="relative group overflow-hidden rounded-3xl">
+                  <img
+                    src={image.image_url}
+                    alt={image.title}
+                    className="w-full h-[280px] md:h-[450px] object-cover group-hover:scale-[1.03] duration-500"
+                  />
 
-            {
+                  {/* Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
 
-              images.map((image) => (
+                  {/* Text */}
+                  <div className="absolute bottom-6 left-6">
+                    <h3 className="text-white text-2xl font-bold">
+                      {image.title}
+                    </h3>
 
-                <SwiperSlide key={image.id}>
-
-                  <div className="relative group overflow-hidden rounded-3xl">
-
-                    <img
-                      src={image.image_url}
-                      alt={image.title}
-                      className="w-full h-[280px] md:h-[450px] object-cover group-hover:scale-[1.03] duration-500"
-                    />
-
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-
-                    {/* Text */}
-                    <div className="absolute bottom-6 left-6">
-
-                      <h3 className="text-white text-2xl font-bold">
-
-                        {image.title}
-
-                      </h3>
-
-                      <p className="text-yellow-400 mt-2">
-
-                        {image.description}
-
-                      </p>
-
-                    </div>
-
+                    <p className="text-yellow-400 mt-2">{image.description}</p>
                   </div>
-
-                </SwiperSlide>
-
-              ))
-
-            }
-
+                </div>
+              </SwiperSlide>
+            ))}
           </Swiper>
-
         </div>
-
       </div>
-
     </section>
-
-  )
-
+  );
 }
 
-export default Gallery
+export default Gallery;

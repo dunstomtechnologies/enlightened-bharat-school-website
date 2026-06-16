@@ -99,11 +99,14 @@ function Hero() {
           </Link>
 
           {/* Explore Button */}
-          <button className="cursor-pointer border border-yellow-400 text-yellow-400 px-10 py-4 rounded-xl font-semibold text-lg hover:bg-yellow-400 hover:text-black duration-300 ease-in-out">
+          <Link
+            to="/campus"
+            className="cursor-pointer border border-yellow-400 text-yellow-400 px-10 py-4 rounded-xl font-semibold text-lg hover:bg-yellow-400 hover:text-black duration-300 ease-in-out"
+          >
 
             Explore Campus
 
-          </button>
+          </Link>
 
         </div>
 

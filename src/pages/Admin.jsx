@@ -1,8 +1,9 @@
 
 
+
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { db, storage } from "../firebase"
+import { db, storage, auth } from "../firebase"
 import { collection, getDocs, deleteDoc, doc, addDoc, serverTimestamp } from "firebase/firestore"
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage"
 import { useAuth } from "../context/AuthContext"
@@ -63,6 +64,24 @@ function Admin() {
   // GALLERY COUNT STATE
   const [galleryCount, setGalleryCount] = useState(0)
 
+  // ========== NEW STATES FOR TABS ==========
+  const [activeTab, setActiveTab] = useState("admissions")
+
+  // CONTACT MESSAGES STATE
+  const [contacts, setContacts] = useState([])
+  const [contactsLoading, setContactsLoading] = useState(false)
+  const [contactViewModal, setContactViewModal] = useState({ open: false, contact: null })
+  const [contactSearchQuery, setContactSearchQuery] = useState("")
+  const [contactCurrentPage, setContactCurrentPage] = useState(1)
+  const contactRowsPerPage = 10
+
+  // REGISTERED USERS STATE
+  const [users, setUsers] = useState([])
+  const [usersLoading, setUsersLoading] = useState(false)
+  const [userSearchQuery, setUserSearchQuery] = useState("")
+  const [userCurrentPage, setUserCurrentPage] = useState(1)
+  const userRowsPerPage = 10
+
  
   // FETCH STUDENTS
  
@@ -97,6 +116,44 @@ function Admin() {
       setGalleryCount(querySnapshot.size);
     } catch (error) {
       console.error("Admin.jsx: Firebase Error in fetchGalleryCount:", error);
+    }
+  }
+
+  // FETCH CONTACTS
+
+  const fetchContacts = async () => {
+    setContactsLoading(true)
+    try {
+      const querySnapshot = await getDocs(collection(db, "contacts"))
+      const fetchedContacts = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      setContacts(fetchedContacts)
+    } catch (error) {
+      console.error("Admin.jsx: Firebase Error in fetchContacts:", error)
+      toast.error("Failed to fetch contact messages")
+    } finally {
+      setContactsLoading(false)
+    }
+  }
+
+  // FETCH USERS
+
+  const fetchUsers = async () => {
+    setUsersLoading(true)
+    try {
+      const querySnapshot = await getDocs(collection(db, "users"))
+      const fetchedUsers = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      setUsers(fetchedUsers)
+    } catch (error) {
+      console.error("Admin.jsx: Firebase Error in fetchUsers:", error)
+    
+    } finally {
+      setUsersLoading(false)
     }
   }
 
@@ -185,21 +242,22 @@ function Admin() {
 
   }
 
-  // =========================
+
   // USE EFFECT
-  // =========================
 
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchStudents();
       fetchGalleryCount();
+      fetchContacts();
+      fetchUsers();
     }, 0);
     return () => clearTimeout(timer);
   }, []);
 
-  // =========================
-  // SEARCH FILTER (Frontend Only)
-  // =========================
+
+  // SEARCH FILTER
+
 
   const filteredStudents = students.filter((student) => {
     const query = searchQuery.toLowerCase()
@@ -211,9 +269,9 @@ function Admin() {
     )
   })
 
-  // =========================
+
   // SORTING
-  // =========================
+
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -243,9 +301,9 @@ function Admin() {
     return 0
   })
 
-  // =========================
+
   // PAGINATION
-  // =========================
+
 
   const totalPages = Math.ceil(sortedStudents.length / rowsPerPage)
   const paginatedStudents = sortedStudents.slice(
@@ -261,9 +319,9 @@ function Admin() {
     return () => clearTimeout(timer);
   }, [searchQuery])
 
-  // =========================
+
   // ADMISSIONS TODAY
-  // =========================
+ 
 
   const admissionsToday = students.filter((student) => {
     if (!student.createdAt?.seconds) return false
@@ -276,9 +334,6 @@ function Admin() {
     )
   }).length
 
-  // =========================
-  // CSV EXPORT
-  // =========================
 
   const exportCSV = () => {
     if (sortedStudents.length === 0) {
@@ -333,10 +388,6 @@ function Admin() {
     closeDeleteModal()
   }
 
-  // =========================
-  // SORT ICON HELPER (Function call to avoid nested component rendering)
-  // =========================
-
   const renderSortIcon = (field) => (
     <span className="inline-flex flex-col ml-1.5 -space-y-1">
       <svg className={`w-3 h-3 ${sortField === field && sortDirection === "asc" ? "text-yellow-400" : "text-gray-600"}`} viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z" /></svg>
@@ -344,9 +395,7 @@ function Admin() {
     </span>
   )
 
-  // =========================
-  // SKELETON ROW HELPER (Function call to avoid nested component rendering)
-  // =========================
+
 
   const renderSkeletonRow = (key) => (
     <tr key={key} className="border-b border-white/[0.06]">
@@ -358,9 +407,6 @@ function Admin() {
     </tr>
   )
 
-  // =========================
-  // FORMAT DATE HELPER
-  // =========================
 
   const formatDate = (timestamp) => {
     if (!timestamp?.seconds) return "N/A"
@@ -373,11 +419,105 @@ function Admin() {
     })
   }
 
+
+
+  const filteredContacts = contacts.filter((contact) => {
+    const query = contactSearchQuery.toLowerCase()
+    return (
+      (contact.name || "").toLowerCase().includes(query) ||
+      (contact.email || "").toLowerCase().includes(query) ||
+      (contact.phone || "").toLowerCase().includes(query) ||
+      (contact.subject || "").toLowerCase().includes(query)
+    )
+  })
+
+  const sortedContacts = [...filteredContacts].sort((a, b) => {
+    const dateA = a.createdAt?.seconds || 0
+    const dateB = b.createdAt?.seconds || 0
+    return dateB - dateA
+  })
+
+  const contactTotalPages = Math.ceil(sortedContacts.length / contactRowsPerPage)
+  const paginatedContacts = sortedContacts.slice(
+    (contactCurrentPage - 1) * contactRowsPerPage,
+    contactCurrentPage * contactRowsPerPage
+  )
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setContactCurrentPage(1);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [contactSearchQuery])
+
+
+  const filteredUsers = users.filter((user) => {
+    const query = userSearchQuery.toLowerCase()
+    return (
+      (user.name || user.displayName || "").toLowerCase().includes(query) ||
+      (user.email || "").toLowerCase().includes(query) ||
+      (user.role || "").toLowerCase().includes(query)
+    )
+  })
+
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    const dateA = a.createdAt?.seconds || 0
+    const dateB = b.createdAt?.seconds || 0
+    return dateB - dateA
+  })
+
+  const userTotalPages = Math.ceil(sortedUsers.length / userRowsPerPage)
+  const paginatedUsers = sortedUsers.slice(
+    (userCurrentPage - 1) * userRowsPerPage,
+    userCurrentPage * userRowsPerPage
+  )
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setUserCurrentPage(1);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [userSearchQuery])
+
+
+  const exportContactsCSV = () => {
+    if (sortedContacts.length === 0) {
+      toast.warn("No contact records to export")
+      return
+    }
+
+    const headers = ["Name", "Email", "Phone", "Subject", "Message", "Date"]
+    const rows = sortedContacts.map((c) => {
+      const date = c.createdAt?.seconds
+        ? new Date(c.createdAt.seconds * 1000).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+        : "N/A"
+      return [
+        c.name || "",
+        c.email || "",
+        c.phone || "",
+        c.subject || "",
+        (c.message || "").replace(/"/g, '""'),
+        date
+      ].map(field => `"${field}"`).join(",")
+    })
+
+    const csvContent = [headers.join(","), ...rows].join("\n")
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `contacts_${new Date().toISOString().split("T")[0]}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+
+    toast.success("Contacts CSV exported successfully")
+  }
+
   return (
 
     <section className="relative z-50 min-h-screen bg-[#061224] px-4 md:px-6 py-28 md:py-32">
 
-      {/* ========== TOAST CONTAINER ========== */}
+  
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -428,7 +568,7 @@ function Admin() {
         </div>
       )}
 
-      {/* ========== VIEW DETAILS MODAL ========== */}
+      {/* ========== VIEW DETAILS MODAL (Admissions) ========== */}
       {viewModal.open && viewModal.student && (
         <div
           className="fixed inset-0 z-[999] flex items-center justify-center px-4"
@@ -495,6 +635,77 @@ function Admin() {
         </div>
       )}
 
+
+      {contactViewModal.open && contactViewModal.contact && (
+        <div
+          className="fixed inset-0 z-[999] flex items-center justify-center px-4"
+          onClick={() => setContactViewModal({ open: false, contact: null })}
+        >
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]"></div>
+          <div
+            className="relative bg-[#0c1a2e] border border-white/10 rounded-2xl p-6 md:p-8 w-full max-w-lg shadow-[0_20px_60px_rgba(0,0,0,0.5)] animate-[scaleIn_0.2s_ease-out]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close */}
+            <button
+              onClick={() => setContactViewModal({ open: false, contact: null })}
+              className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-purple-400/10 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-white text-lg font-bold">Contact Message</h3>
+                <p className="text-gray-500 text-xs">Full message details</p>
+              </div>
+            </div>
+
+            {/* Details */}
+            <div className="space-y-4">
+              {[
+                { label: "Name", value: contactViewModal.contact.name, color: "text-white font-medium" },
+                { label: "Email", value: contactViewModal.contact.email },
+                { label: "Phone", value: contactViewModal.contact.phone },
+                { label: "Subject", value: contactViewModal.contact.subject, badge: true },
+                { label: "Date", value: formatDate(contactViewModal.contact.createdAt) },
+              ].map((item, i) => (
+                <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0 py-2.5 border-b border-white/[0.05] last:border-0">
+                  <span className="text-gray-500 text-xs uppercase tracking-wider font-medium sm:w-36 shrink-0">{item.label}</span>
+                  {item.badge ? (
+                    <span className="bg-yellow-400/10 text-yellow-400 text-xs font-medium px-3 py-1 rounded-full w-fit">{item.value || "N/A"}</span>
+                  ) : (
+                    <span className={`text-sm ${item.color || "text-gray-300"}`}>{item.value || "N/A"}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Message Content */}
+            <div className="mt-5 bg-white/[0.04] border border-white/[0.06] rounded-xl p-4">
+              <p className="text-gray-500 text-xs uppercase tracking-wider font-medium mb-2">Message</p>
+              <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">{contactViewModal.contact.message || "No message"}</p>
+            </div>
+
+            {/* Footer */}
+            <button
+              onClick={() => setContactViewModal({ open: false, contact: null })}
+              className="w-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-gray-300 hover:text-white font-semibold py-3 rounded-xl transition-all duration-300 text-sm mt-6"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto">
 
         {/* ========== HEADING ========== */}
@@ -535,7 +746,7 @@ function Admin() {
         </div>
 
         {/* ========== STATS CARDS ========== */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5 mb-10">
 
           {/* Total Admissions */}
           <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/5 backdrop-blur-xl border border-yellow-400/20 rounded-2xl p-6 transition-all duration-300 hover:border-yellow-400/40 hover:shadow-[0_0_30px_rgba(250,204,21,0.1)]">
@@ -577,6 +788,36 @@ function Admin() {
               <div className="w-12 h-12 bg-emerald-400/10 rounded-xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Messages */}
+          <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/5 backdrop-blur-xl border border-purple-400/20 rounded-2xl p-6 transition-all duration-300 hover:border-purple-400/40 hover:shadow-[0_0_30px_rgba(168,85,247,0.1)]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-400/80 text-xs font-medium tracking-wider uppercase">Contact Messages</p>
+                <p className="text-white text-3xl font-bold mt-2">{contactsLoading ? "—" : contacts.length}</p>
+              </div>
+              <div className="w-12 h-12 bg-purple-400/10 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Registered Users */}
+          <div className="bg-gradient-to-br from-rose-500/20 to-rose-600/5 backdrop-blur-xl border border-rose-400/20 rounded-2xl p-6 transition-all duration-300 hover:border-rose-400/40 hover:shadow-[0_0_30px_rgba(251,113,133,0.1)]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-rose-400/80 text-xs font-medium tracking-wider uppercase">Registered Users</p>
+                <p className="text-white text-3xl font-bold mt-2">{usersLoading ? "—" : users.length}</p>
+              </div>
+              <div className="w-12 h-12 bg-rose-400/10 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
             </div>
@@ -641,11 +882,38 @@ function Admin() {
 
         </div>
 
+        {/* ========== TAB NAVIGATION ========== */}
+        <div className="mt-10 mb-6">
+          <div className="flex flex-wrap gap-2">
+            {[
+              { id: "admissions", label: "Admission Records", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" },
+              { id: "contacts", label: "Contact Messages", icon: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" },
+              { id: "users", label: "Registered Users", icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-300 ${
+                  activeTab === tab.id
+                    ? "bg-yellow-400/20 text-yellow-400 border border-yellow-400/30"
+                    : "bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-gray-400 hover:text-white"
+                }`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={tab.icon} />
+                </svg>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         
         {/* ========== ADMISSIONS TABLE SECTION ========== */}
         
 
-        <div className="mt-10">
+        {activeTab === "admissions" && (
+        <div className="mt-4">
 
           {/* Section Header + Search + Actions */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
@@ -873,6 +1141,361 @@ function Admin() {
           </div>
 
         </div>
+        )}
+
+        {/* ========== CONTACT MESSAGES TAB ========== */}
+        {activeTab === "contacts" && (
+        <div className="mt-4">
+
+          {/* Section Header + Search + Actions */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-400/10 rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h2 className="text-white text-xl md:text-2xl font-bold">
+                Contact Messages
+              </h2>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              {/* CSV Export */}
+              <button
+                onClick={exportContactsCSV}
+                className="flex items-center justify-center gap-2 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-gray-300 hover:text-white px-4 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-300"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Export CSV
+              </button>
+
+              {/* Search Bar */}
+              <div className="relative w-full sm:w-72">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search messages..."
+                  value={contactSearchQuery}
+                  onChange={(e) => setContactSearchQuery(e.target.value)}
+                  className="w-full bg-white/[0.06] border border-white/10 rounded-xl pl-11 pr-5 py-2.5 text-white text-sm outline-none focus:border-purple-400/50 transition-all duration-300 placeholder:text-gray-500"
+                />
+              </div>
+            </div>
+
+          </div>
+
+          {/* Table Container */}
+          <div className="relative z-50 bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_4px_30px_rgba(0,0,0,0.3)]">
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-white text-sm">
+
+                <thead>
+                  <tr className="bg-white/[0.06] border-b border-white/10">
+                    <th className="py-4 px-5 text-xs uppercase tracking-wider text-gray-400 font-semibold whitespace-nowrap">Name</th>
+                    <th className="py-4 px-5 text-xs uppercase tracking-wider text-gray-400 font-semibold whitespace-nowrap">Email</th>
+                    <th className="py-4 px-5 text-xs uppercase tracking-wider text-gray-400 font-semibold whitespace-nowrap">Phone</th>
+                    <th className="py-4 px-5 text-xs uppercase tracking-wider text-gray-400 font-semibold whitespace-nowrap">Subject</th>
+                    <th className="py-4 px-5 text-xs uppercase tracking-wider text-gray-400 font-semibold whitespace-nowrap">Date</th>
+                    <th className="py-4 px-5 text-xs uppercase tracking-wider text-gray-400 font-semibold whitespace-nowrap text-center">Action</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+
+                  {contactsLoading ? (
+                    [...Array(5)].map((_, i) => (
+                      <tr key={i} className="border-b border-white/[0.06]">
+                        {[...Array(6)].map((_, j) => (
+                          <td key={j} className="py-4 px-5">
+                            <div className="h-4 bg-white/[0.06] rounded-lg animate-pulse" style={{ width: j === 5 ? "60px" : `${60 + Math.random() * 40}%` }}></div>
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  ) : paginatedContacts.length > 0 ? (
+
+                    paginatedContacts.map((contact, index) => (
+
+                      <tr
+                        key={contact.id}
+                        className={`border-b border-white/[0.06] hover:bg-white/[0.06] transition-all duration-200 ${index % 2 === 0 ? "bg-transparent" : "bg-white/[0.02]"}`}
+                      >
+                        <td className="py-4 px-5 whitespace-nowrap font-medium">{contact.name}</td>
+                        <td className="py-4 px-5 whitespace-nowrap text-gray-300 max-w-[180px] truncate">{contact.email}</td>
+                        <td className="py-4 px-5 whitespace-nowrap text-gray-300">{contact.phone || "N/A"}</td>
+                        <td className="py-4 px-5 whitespace-nowrap">
+                          <span className="bg-yellow-400/10 text-yellow-400 text-xs font-medium px-3 py-1 rounded-full">
+                            {contact.subject || "N/A"}
+                          </span>
+                        </td>
+                        <td className="py-4 px-5 whitespace-nowrap text-gray-400 text-xs">{formatDate(contact.createdAt)}</td>
+                        <td className="py-4 px-5 whitespace-nowrap text-center">
+                          <button
+                            onClick={() => setContactViewModal({ open: true, contact })}
+                            className="cursor-pointer bg-blue-500/15 hover:bg-blue-500 text-blue-400 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300 active:scale-95"
+                          >
+                            View
+                          </button>
+                        </td>
+                      </tr>
+
+                    ))
+
+                  ) : (
+
+                    <tr>
+                      <td colSpan="6" className="py-16 text-center">
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="w-16 h-16 bg-white/[0.04] rounded-full flex items-center justify-center">
+                            <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                          <p className="text-gray-500 text-base font-medium">
+                            {contactSearchQuery ? "No matching messages found" : "No Contact Messages"}
+                          </p>
+                          <p className="text-gray-600 text-sm">
+                            {contactSearchQuery ? "Try a different search term" : "Contact messages will appear here once visitors submit the form"}
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+
+                  )}
+
+                </tbody>
+
+              </table>
+            </div>
+
+            {/* Table Footer with Pagination */}
+            {!contactsLoading && sortedContacts.length > 0 && (
+              <div className="bg-white/[0.03] border-t border-white/[0.06] px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p className="text-gray-500 text-xs">
+                  Showing {((contactCurrentPage - 1) * contactRowsPerPage) + 1}–{Math.min(contactCurrentPage * contactRowsPerPage, sortedContacts.length)} of {sortedContacts.length} messages
+                </p>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setContactCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={contactCurrentPage === 1}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${contactCurrentPage === 1 ? "text-gray-600 cursor-not-allowed" : "text-gray-400 hover:text-white hover:bg-white/[0.06]"}`}
+                  >
+                    ← Prev
+                  </button>
+
+                  {[...Array(contactTotalPages)].map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setContactCurrentPage(i + 1)}
+                      className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all duration-200 ${contactCurrentPage === i + 1 ? "bg-yellow-400/20 text-yellow-400 border border-yellow-400/30" : "text-gray-400 hover:text-white hover:bg-white/[0.06]"}`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={() => setContactCurrentPage(p => Math.min(contactTotalPages, p + 1))}
+                    disabled={contactCurrentPage === contactTotalPages}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${contactCurrentPage === contactTotalPages ? "text-gray-600 cursor-not-allowed" : "text-gray-400 hover:text-white hover:bg-white/[0.06]"}`}
+                  >
+                    Next →
+                  </button>
+
+                  <button
+                    onClick={fetchContacts}
+                    className="ml-2 text-yellow-400/70 hover:text-yellow-400 p-1.5 rounded-lg hover:bg-white/[0.06] transition-all duration-200"
+                    title="Refresh data"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </div>
+
+        </div>
+        )}
+
+        {/* ========== REGISTERED USERS TAB ========== */}
+        {activeTab === "users" && (
+        <div className="mt-4">
+
+          {/* Section Header + Search */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-rose-400/10 rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <h2 className="text-white text-xl md:text-2xl font-bold">
+                Registered Users
+              </h2>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              {/* Search Bar */}
+              <div className="relative w-full sm:w-72">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  value={userSearchQuery}
+                  onChange={(e) => setUserSearchQuery(e.target.value)}
+                  className="w-full bg-white/[0.06] border border-white/10 rounded-xl pl-11 pr-5 py-2.5 text-white text-sm outline-none focus:border-rose-400/50 transition-all duration-300 placeholder:text-gray-500"
+                />
+              </div>
+            </div>
+
+          </div>
+
+          {/* Table Container */}
+          <div className="relative z-50 bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_4px_30px_rgba(0,0,0,0.3)]">
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-white text-sm">
+
+                <thead>
+                  <tr className="bg-white/[0.06] border-b border-white/10">
+                    <th className="py-4 px-5 text-xs uppercase tracking-wider text-gray-400 font-semibold whitespace-nowrap">Name</th>
+                    <th className="py-4 px-5 text-xs uppercase tracking-wider text-gray-400 font-semibold whitespace-nowrap">Email</th>
+                    <th className="py-4 px-5 text-xs uppercase tracking-wider text-gray-400 font-semibold whitespace-nowrap">Role</th>
+                    <th className="py-4 px-5 text-xs uppercase tracking-wider text-gray-400 font-semibold whitespace-nowrap">Joined Date</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+
+                  {usersLoading ? (
+                    [...Array(5)].map((_, i) => (
+                      <tr key={i} className="border-b border-white/[0.06]">
+                        {[...Array(4)].map((_, j) => (
+                          <td key={j} className="py-4 px-5">
+                            <div className="h-4 bg-white/[0.06] rounded-lg animate-pulse" style={{ width: `${60 + Math.random() * 40}%` }}></div>
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  ) : paginatedUsers.length > 0 ? (
+
+                    paginatedUsers.map((user, index) => (
+
+                      <tr
+                        key={user.id}
+                        className={`border-b border-white/[0.06] hover:bg-white/[0.06] transition-all duration-200 ${index % 2 === 0 ? "bg-transparent" : "bg-white/[0.02]"}`}
+                      >
+                        <td className="py-4 px-5 whitespace-nowrap font-medium">{user.name || user.displayName || "N/A"}</td>
+                        <td className="py-4 px-5 whitespace-nowrap text-gray-300 max-w-[180px] truncate">{user.email || "N/A"}</td>
+                        <td className="py-4 px-5 whitespace-nowrap">
+                          <span className={`text-xs font-medium px-3 py-1 rounded-full ${
+                            (user.role || "").toLowerCase() === "admin" 
+                              ? "bg-yellow-400/10 text-yellow-400" 
+                              : "bg-blue-400/10 text-blue-400"
+                          }`}>
+                            {user.role || "user"}
+                          </span>
+                        </td>
+                        <td className="py-4 px-5 whitespace-nowrap text-gray-400 text-xs">{formatDate(user.createdAt)}</td>
+                      </tr>
+
+                    ))
+
+                  ) : (
+
+                    <tr>
+                      <td colSpan="4" className="py-16 text-center">
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="w-16 h-16 bg-white/[0.04] rounded-full flex items-center justify-center">
+                            <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                          </div>
+                          <p className="text-gray-500 text-base font-medium">
+                            {userSearchQuery ? "No matching users found" : "No Registered Users"}
+                          </p>
+                          <p className="text-gray-600 text-sm">
+                            {userSearchQuery ? "Try a different search term" : "Registered users will appear here once a users collection is populated"}
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+
+                  )}
+
+                </tbody>
+
+              </table>
+            </div>
+
+            {/* Table Footer with Pagination */}
+            {!usersLoading && sortedUsers.length > 0 && (
+              <div className="bg-white/[0.03] border-t border-white/[0.06] px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p className="text-gray-500 text-xs">
+                  Showing {((userCurrentPage - 1) * userRowsPerPage) + 1}–{Math.min(userCurrentPage * userRowsPerPage, sortedUsers.length)} of {sortedUsers.length} users
+                </p>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setUserCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={userCurrentPage === 1}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${userCurrentPage === 1 ? "text-gray-600 cursor-not-allowed" : "text-gray-400 hover:text-white hover:bg-white/[0.06]"}`}
+                  >
+                    ← Prev
+                  </button>
+
+                  {[...Array(userTotalPages)].map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setUserCurrentPage(i + 1)}
+                      className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all duration-200 ${userCurrentPage === i + 1 ? "bg-yellow-400/20 text-yellow-400 border border-yellow-400/30" : "text-gray-400 hover:text-white hover:bg-white/[0.06]"}`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={() => setUserCurrentPage(p => Math.min(userTotalPages, p + 1))}
+                    disabled={userCurrentPage === userTotalPages}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${userCurrentPage === userTotalPages ? "text-gray-600 cursor-not-allowed" : "text-gray-400 hover:text-white hover:bg-white/[0.06]"}`}
+                  >
+                    Next →
+                  </button>
+
+                  <button
+                    onClick={fetchUsers}
+                    className="ml-2 text-yellow-400/70 hover:text-yellow-400 p-1.5 rounded-lg hover:bg-white/[0.06] transition-all duration-200"
+                    title="Refresh data"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </div>
+
+        </div>
+        )}
 
       </div>
 
