@@ -105,14 +105,13 @@ function Gallery() {
   return (
     <section id="gallery" className="bg-[#061224] py-24 px-6 overflow-hidden">
       <div className="max-w-7xl mx-auto">
-        
         {/* Sanskrit Strip */}
-        <div className="text-center mb-20">
-          <h2 className="text-yellow-400 text-5xl font-semibold tracking-normal">
+        <div className="text-center mb-20 px-4">
+          <h2 className="text-yellow-400 text-3xl sm:text-4xl md:text-5xl font-semibold whitespace-nowrap leading-tight">
             ॥ सा विद्या या विमुक्तये ॥
           </h2>
 
-          <p className="text-gray-400 mt-6 text-lg tracking-[3px]">
+          <p className="text-gray-400 mt-6 text-sm sm:text-base md:text-lg tracking-[2px]">
             True Knowledge Liberates The Soul
           </p>
 
