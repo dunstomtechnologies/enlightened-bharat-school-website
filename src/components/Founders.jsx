@@ -5,7 +5,7 @@ const founders = [
   {
     name: "Durgesh Nandan",
     role: "Founder & Academic Director",
-    credentials: "Ford Motor Company • Ex-AWS • Ex-Microsoft",
+    credentials: "Executive Director- Ford Motor Company • Ex-AWS • Ex-Microsoft",
     bio: "Durgesh Nandan is a distinguished technology leader with over two decades of experience in software engineering, artificial intelligence, cloud computing, data systems, and product innovation. Currently serving as Executive Director at Ford Motor Company, he has previously held senior leadership positions at Amazon Web Services (AWS) and Microsoft. Through Enlightened Bharat Gurukul, he aims to combine modern technological excellence with timeless Indian wisdom, helping students become capable, ethical, and future-ready leaders.",
     quote:
       "True education develops both competence and character, enabling individuals to contribute responsibly to society.",
@@ -14,7 +14,7 @@ const founders = [
   {
     name: "Tushar Nene",
     role: "Co-Founder & Managing Trustee",
-    credentials: "Education Reformer • Mentor • Institution Builder",
+    credentials: "Education Reformer • Mentor • Institution Builder • Ex-Microsoft",
     bio: "Tushar Nene is a passionate educator, mentor, and institution builder dedicated to strengthening Indian education through values-based learning. With extensive experience in academic leadership, mentoring, and educational initiatives, he has worked to promote holistic development that nurtures intellect, character, discipline, and social responsibility. At Enlightened Bharat Gurukul, he guides the integration of Indian knowledge traditions with modern educational practices to create meaningful learning experiences for students.",
     quote:
       "Education should inspire self-discovery, responsibility, and a lifelong commitment to learning.",
