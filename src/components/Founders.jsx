@@ -1,11 +1,14 @@
 import { motion } from "framer-motion";
 import { FaEnvelope } from "react-icons/fa";
 
+
 const founders = [
   {
     name: "Durgesh Nandan",
     role: "Founder & Academic Director",
-    credentials: "Executive Director- Ford Motor Company • Ex-AWS • Ex-Microsoft",
+   
+    credentials:
+      "Executive Director- Ford Motor Company • Ex-AWS • Ex-Microsoft",
     bio: "Durgesh Nandan is a distinguished technology leader with over two decades of experience in software engineering, artificial intelligence, cloud computing, data systems, and product innovation. Currently serving as Executive Director at Ford Motor Company, he has previously held senior leadership positions at Amazon Web Services (AWS) and Microsoft. Through Enlightened Bharat Gurukul, he aims to combine modern technological excellence with timeless Indian wisdom, helping students become capable, ethical, and future-ready leaders.",
     quote:
       "True education develops both competence and character, enabling individuals to contribute responsibly to society.",
@@ -14,7 +17,8 @@ const founders = [
   {
     name: "Tushar Nene",
     role: "Co-Founder & Managing Trustee",
-    credentials: "Education Reformer • Mentor • Institution Builder • Ex-Microsoft",
+    credentials:
+      "Education Reformer • Mentor • Institution Builder • Ex-Microsoft",
     bio: "Tushar Nene is a passionate educator, mentor, and institution builder dedicated to strengthening Indian education through values-based learning. With extensive experience in academic leadership, mentoring, and educational initiatives, he has worked to promote holistic development that nurtures intellect, character, discipline, and social responsibility. At Enlightened Bharat Gurukul, he guides the integration of Indian knowledge traditions with modern educational practices to create meaningful learning experiences for students.",
     quote:
       "Education should inspire self-discovery, responsibility, and a lifelong commitment to learning.",
@@ -28,7 +32,7 @@ function Founders() {
       id="founders"
       className="py-24 px-6 bg-gradient-to-b from-[#061224] to-[#08172d] relative overflow-hidden"
     >
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-yellow-500/5 blur-[120px] rounded-full pointer-events-none"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-yellow-500/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-20">
@@ -77,8 +81,8 @@ function Founders() {
               className="bg-white/[0.02] border border-white/5 rounded-[32px] p-8 md:p-12 hover:border-yellow-400/20 hover:bg-white/[0.04] duration-300 relative group flex flex-col justify-between shadow-2xl"
             >
               <div>
-                <div className="flex justify-between items-start mb-6">
-                  <div>
+                <div className="flex justify-between items-start mb-6 gap-4">
+                  <div className="flex-1">
                     <h3 className="text-white text-2xl md:text-3xl font-bold">
                       {founder.name}
                     </h3>
@@ -87,6 +91,7 @@ function Founders() {
                       {founder.role}
                     </p>
                   </div>
+
                 </div>
 
                 <div className="flex flex-wrap gap-2 mb-6">
