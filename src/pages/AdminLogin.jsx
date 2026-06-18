@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext"
 import { Navigate, Link, useNavigate } from "react-router-dom"
 import { Helmet } from "react-helmet-async"
 
-import logo from "../assets/logo.jpeg"
+import logo from "../assets/logo.png"
 
 function AdminLogin() {
 

@@ -102,7 +102,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-import logo from "../assets/logo.jpeg";
+import logo from "../assets/logo.png";
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -127,7 +127,7 @@ function Navbar() {
             </h2>
 
             <p className="text-xs text-yellow-400 tracking-[2px]">
-              Modern Gurukul
+               Gurukul
             </p>
           </div>
         </Link>

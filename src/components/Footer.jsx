@@ -42,7 +42,7 @@
 
 // Updated code
 
-import logo from "../assets/logo.jpeg";
+import logo from "../assets/logo.png";
 import { Link } from "react-router-dom";
 //import ScrollToTopButton from "./ScrollToTopButton";
 
