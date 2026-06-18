@@ -4,25 +4,30 @@ import { FaEnvelope } from "react-icons/fa";
 const founders = [
   {
     name: "Durgesh Nandan",
-    role: "Co-Founder & Academic Director",
-    credentials: "IIT Kharagpur • Ex-Microsoft • Ex-Amazon",
-    bio: "Dr. Sharma spent 15+ years leading software engineering divisions at Microsoft and Amazon in Seattle. Believing that modern technical capabilities must be built on top of deep concentration and character, he returned to India to pioneer a Gurukul system that prepares students for global challenges.",
-    quote: "Education should not just load the mind with data, but build the cognitive endurance to process it ethically.",
-    email: "rajesh.sharma@enlightenedbharat.com"
+    role: "Founder & Academic Director",
+    credentials: "Ford Motor Company • Ex-AWS • Ex-Microsoft",
+    bio: "Durgesh Nandan is a distinguished technology leader with over two decades of experience in software engineering, artificial intelligence, cloud computing, data systems, and product innovation. Currently serving as Executive Director at Ford Motor Company, he has previously held senior leadership positions at Amazon Web Services (AWS) and Microsoft. Through Enlightened Bharat Gurukul, he aims to combine modern technological excellence with timeless Indian wisdom, helping students become capable, ethical, and future-ready leaders.",
+    quote:
+      "True education develops both competence and character, enabling individuals to contribute responsibly to society.",
+    email: "info@enlightenedbharat.com",
   },
   {
     name: "Tushar Nene",
     role: "Co-Founder & Managing Trustee",
-    credentials: "IIT Delhi • Ex-Ford • Systems Director",
-    bio: "Anuj brings extensive experience in large-scale operations and engineering leadership from Ford and global technology firms. At Enlightened Bharat, he focuses on integrating operational discipline, structural excellence, and Vedic values into our daily tracking systems.",
-    quote: "A child who has mastered the habit of focused attention can master any skill or profession in the modern world.",
-    email: "anuj.keshav@enlightenedbharat.com"
-  }
+    credentials: "Education Reformer • Mentor • Institution Builder",
+    bio: "Tushar Nene is a passionate educator, mentor, and institution builder dedicated to strengthening Indian education through values-based learning. With extensive experience in academic leadership, mentoring, and educational initiatives, he has worked to promote holistic development that nurtures intellect, character, discipline, and social responsibility. At Enlightened Bharat Gurukul, he guides the integration of Indian knowledge traditions with modern educational practices to create meaningful learning experiences for students.",
+    quote:
+      "Education should inspire self-discovery, responsibility, and a lifelong commitment to learning.",
+    email: "info@enlightenedbharat.com",
+  },
 ];
 
 function Founders() {
   return (
-    <section id="founders" className="py-24 px-6 bg-gradient-to-b from-[#061224] to-[#08172d] relative overflow-hidden">
+    <section
+      id="founders"
+      className="py-24 px-6 bg-gradient-to-b from-[#061224] to-[#08172d] relative overflow-hidden"
+    >
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-yellow-500/5 blur-[120px] rounded-full pointer-events-none"></div>
 
       <div className="max-w-6xl mx-auto relative z-10">
@@ -36,6 +41,7 @@ function Founders() {
           >
             Leadership
           </motion.p>
+
           <motion.h2
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -45,6 +51,7 @@ function Founders() {
           >
             Meet Our <span className="text-yellow-400">Founders</span>
           </motion.h2>
+
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -52,7 +59,10 @@ function Founders() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-gray-400 mt-6 text-lg leading-relaxed"
           >
-            Combining world-class industrial experience with a deep devotion to restoring the soul of Indian education.
+            Combining global technology leadership with a deep commitment to
+            value-based education, our founders are building a learning
+            ecosystem that prepares students for both professional excellence
+            and meaningful lives.
           </motion.p>
         </div>
 
@@ -69,12 +79,16 @@ function Founders() {
               <div>
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h3 className="text-white text-2xl md:text-3xl font-bold">{founder.name}</h3>
-                    <p className="text-yellow-400 text-sm font-semibold mt-1">{founder.role}</p>
+                    <h3 className="text-white text-2xl md:text-3xl font-bold">
+                      {founder.name}
+                    </h3>
+
+                    <p className="text-yellow-400 text-sm font-semibold mt-1">
+                      {founder.role}
+                    </p>
                   </div>
                 </div>
 
-                {/* Credentials list */}
                 <div className="flex flex-wrap gap-2 mb-6">
                   {founder.credentials.split(" • ").map((cred, idx) => (
                     <span
@@ -90,14 +104,16 @@ function Founders() {
                   {founder.bio}
                 </p>
 
-                {/* Blockquote */}
                 <div className="border-l-2 border-yellow-400/40 pl-4 py-1 mb-8 italic text-gray-400 text-sm">
                   "{founder.quote}"
                 </div>
               </div>
 
               <div className="border-t border-white/5 pt-6 mt-auto flex items-center justify-between">
-                <span className="text-gray-500 text-xs tracking-wider uppercase font-semibold">Educational Mission</span>
+                <span className="text-gray-500 text-xs tracking-wider uppercase font-semibold">
+                  Educational Mission
+                </span>
+
                 <a
                   href={`mailto:${founder.email}`}
                   className="flex items-center gap-2 text-yellow-400 hover:text-yellow-300 transition-colors text-xs font-semibold"
