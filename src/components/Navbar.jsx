@@ -99,13 +99,18 @@
 
 // updated code
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 import logo from "../assets/logo.png";
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location]);
 
   return (
     <nav className="w-full fixed top-0 left-0 z-50 bg-black/30 backdrop-blur-lg border-b border-white/10">
@@ -205,7 +210,7 @@ function Navbar() {
               </Link>
             </li>
 
-            <Link to="/admissions">
+            <Link to="/admissions" onClick={() => setMenuOpen(false)}>
               <button className="bg-yellow-500 text-black font-semibold px-5 py-3 rounded-xl mt-2 w-fit">
                 Apply Now
               </button>
