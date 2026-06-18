@@ -3,6 +3,7 @@ import { db } from "../firebase"
 import { collection, addDoc, serverTimestamp } from "firebase/firestore"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
+import emailjs from "@emailjs/browser"
 
 function Contact() {
 
@@ -32,6 +33,7 @@ function Contact() {
     setIsSubmitting(true)
 
     try {
+      // 1. Save data in Firestore first
       await addDoc(collection(db, "contacts"), {
         name: formData.name.trim(),
         email: formData.email.trim(),
@@ -41,7 +43,32 @@ function Contact() {
         createdAt: serverTimestamp()
       })
 
-      toast.success("Message sent successfully!")
+      // 2. Try to send EmailJS notification
+      try {
+        const templateParams = {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          subject: formData.subject.trim(),
+          message: formData.message.trim(),
+          dateTime: new Date().toLocaleString(),
+          reply_to: formData.email.trim()
+        }
+
+        const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID
+        const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
+        const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+
+        if (serviceId && templateId && publicKey) {
+          await emailjs.send(serviceId, templateId, templateParams, publicKey)
+        } else {
+          console.warn("EmailJS environment variables are missing. Skipping email notification.")
+        }
+      } catch (emailError) {
+        console.error("Email notification failed to send:", emailError)
+      }
+
+      toast.success("Thank you for contacting us. Your message has been submitted successfully.")
 
       // Reset form
       setFormData({
