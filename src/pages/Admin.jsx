@@ -4,8 +4,8 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { db, storage, auth } from "../firebase"
-import { collection, getDocs, deleteDoc, doc, addDoc, serverTimestamp } from "firebase/firestore"
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage"
+import { collection, getDocs, deleteDoc, doc, addDoc, serverTimestamp, query, orderBy } from "firebase/firestore"
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage"
 import { useAuth } from "../context/AuthContext"
 
 import { toast, ToastContainer } from "react-toastify"
@@ -82,6 +82,13 @@ function Admin() {
   const [userCurrentPage, setUserCurrentPage] = useState(1)
   const userRowsPerPage = 10
 
+  // GALLERY MANAGEMENT STATE
+  const [galleryImages, setGalleryImages] = useState([])
+  const [galleryLoading, setGalleryLoading] = useState(false)
+  const [uploadConfirmModal, setUploadConfirmModal] = useState(false)
+  const [galleryDeleteModal, setGalleryDeleteModal] = useState({ open: false, image: null })
+  const [isDeleting, setIsDeleting] = useState(false)
+
  
   // FETCH STUDENTS
  
@@ -116,6 +123,25 @@ function Admin() {
       setGalleryCount(querySnapshot.size);
     } catch (error) {
       console.error("Admin.jsx: Firebase Error in fetchGalleryCount:", error);
+    }
+  }
+
+  // FETCH GALLERY IMAGES
+
+  const fetchGalleryImages = async () => {
+    setGalleryLoading(true)
+    try {
+      const q = query(collection(db, "gallery"), orderBy("createdAt", "desc"))
+      const querySnapshot = await getDocs(q)
+      const fetchedImages = querySnapshot.docs.map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }))
+      setGalleryImages(fetchedImages)
+    } catch (error) {
+      console.error("Admin.jsx: Firebase Error in fetchGalleryImages:", error)
+    } finally {
+      setGalleryLoading(false)
     }
   }
 
@@ -179,14 +205,6 @@ function Admin() {
 
   const uploadImage = async () => {
 
-    if (!image) {
-
-      toast.warn("Please select an image first")
-
-      return
-
-    }
-
     setIsUploading(true)
     setUploadProgress(0)
 
@@ -206,7 +224,7 @@ function Admin() {
         },
         (error) => {
           console.log(error)
-          toast.error("Failed to upload image")
+          toast.error("Failed to upload image.")
           setIsUploading(false)
           setUploadProgress(0)
         },
@@ -222,7 +240,7 @@ function Admin() {
             createdAt: serverTimestamp()
           });
 
-          toast.success("Gallery image uploaded successfully")
+          toast.success("Image uploaded successfully.")
 
           // Reset Fields
           setImage(null)
@@ -231,15 +249,71 @@ function Admin() {
           setIsUploading(false)
           setUploadProgress(0)
           fetchGalleryCount()
+          fetchGalleryImages()
         }
       );
     } catch (error) {
       console.log(error)
-      toast.error("Failed to upload image")
+      toast.error("Failed to upload image.")
       setIsUploading(false)
       setUploadProgress(0)
     }
 
+  }
+
+  // UPLOAD CONFIRMATION HANDLERS
+
+  const handleUploadClick = () => {
+    if (!image) {
+      toast.warn("Please select an image first")
+      return
+    }
+    setUploadConfirmModal(true)
+  }
+
+  const confirmUpload = () => {
+    setUploadConfirmModal(false)
+    uploadImage()
+  }
+
+  // GALLERY DELETE HANDLERS
+
+  const openGalleryDeleteModal = (galleryImage) => {
+    setGalleryDeleteModal({ open: true, image: galleryImage })
+  }
+
+  const closeGalleryDeleteModal = () => {
+    setGalleryDeleteModal({ open: false, image: null })
+  }
+
+  const confirmGalleryDelete = async () => {
+    if (!galleryDeleteModal.image) return
+    setIsDeleting(true)
+    try {
+      const imageUrl = galleryDeleteModal.image.image_url
+      // Extract storage path from the download URL
+      const decodedUrl = decodeURIComponent(imageUrl)
+      const pathStart = decodedUrl.indexOf("/o/") + 3
+      const pathEnd = decodedUrl.indexOf("?")
+      const storagePath = decodedUrl.substring(pathStart, pathEnd)
+
+      // Delete from Firebase Storage
+      const storageRefToDelete = ref(storage, storagePath)
+      await deleteObject(storageRefToDelete)
+
+      // Delete from Firestore
+      await deleteDoc(doc(db, "gallery", galleryDeleteModal.image.id))
+
+      toast.success("Image deleted successfully.")
+      fetchGalleryCount()
+      fetchGalleryImages()
+    } catch (error) {
+      console.error("Failed to delete gallery image:", error)
+      toast.error("Failed to delete image.")
+    } finally {
+      setIsDeleting(false)
+      closeGalleryDeleteModal()
+    }
   }
 
 
@@ -249,6 +323,7 @@ function Admin() {
     const timer = setTimeout(() => {
       fetchStudents();
       fetchGalleryCount();
+      fetchGalleryImages();
       fetchContacts();
       fetchUsers();
     }, 0);
@@ -568,6 +643,79 @@ function Admin() {
         </div>
       )}
 
+      {/* ========== UPLOAD CONFIRMATION MODAL ========== */}
+      {uploadConfirmModal && (
+        <div
+          className="fixed inset-0 z-[999] flex items-center justify-center px-4"
+          onClick={() => setUploadConfirmModal(false)}
+        >
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]"></div>
+          <div
+            className="relative bg-[#0c1a2e] border border-white/10 rounded-2xl p-6 md:p-8 w-full max-w-md shadow-[0_20px_60px_rgba(0,0,0,0.5)] animate-[scaleIn_0.2s_ease-out]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-center mb-5">
+              <div className="w-16 h-16 bg-yellow-500/10 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+            </div>
+            <h3 className="text-white text-xl font-bold text-center">Confirm Upload</h3>
+            <p className="text-gray-400 text-center mt-3 text-sm leading-relaxed">
+              Are you sure you want to upload this image to the Gallery?
+            </p>
+            <div className="flex gap-3 mt-8">
+              <button onClick={() => setUploadConfirmModal(false)} className="flex-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-gray-300 hover:text-white font-semibold py-3 rounded-xl transition-all duration-300 text-sm">
+                Cancel
+              </button>
+              <button onClick={confirmUpload} className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-3 rounded-xl transition-all duration-300 text-sm hover:shadow-[0_0_20px_rgba(250,204,21,0.3)] active:scale-[0.97]">
+                Upload
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========== GALLERY DELETE CONFIRMATION MODAL ========== */}
+      {galleryDeleteModal.open && (
+        <div
+          className="fixed inset-0 z-[999] flex items-center justify-center px-4"
+          onClick={closeGalleryDeleteModal}
+        >
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]"></div>
+          <div
+            className="relative bg-[#0c1a2e] border border-white/10 rounded-2xl p-6 md:p-8 w-full max-w-md shadow-[0_20px_60px_rgba(0,0,0,0.5)] animate-[scaleIn_0.2s_ease-out]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-center mb-5">
+              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+            </div>
+            <h3 className="text-white text-xl font-bold text-center">Delete Image</h3>
+            <p className="text-gray-400 text-center mt-3 text-sm leading-relaxed">
+              Are you sure you want to permanently delete this image?<br />
+              <span className="text-red-400 font-medium">This action cannot be undone.</span>
+            </p>
+            <div className="flex gap-3 mt-8">
+              <button onClick={closeGalleryDeleteModal} className="flex-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-gray-300 hover:text-white font-semibold py-3 rounded-xl transition-all duration-300 text-sm">
+                Cancel
+              </button>
+              <button
+                onClick={confirmGalleryDelete}
+                disabled={isDeleting}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-xl transition-all duration-300 text-sm hover:shadow-[0_0_20px_rgba(239,68,68,0.3)] active:scale-[0.97]"
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ========== VIEW DETAILS MODAL (Admissions) ========== */}
       {viewModal.open && viewModal.student && (
         <div
@@ -873,13 +1021,78 @@ function Admin() {
           )}
 
           <button
-            onClick={uploadImage}
+            onClick={handleUploadClick}
             disabled={isUploading}
             className={`font-semibold px-8 py-3.5 rounded-xl mt-6 duration-300 active:scale-[0.98] transition-all ${isUploading ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-yellow-500 hover:bg-yellow-400 text-black hover:shadow-[0_0_20px_rgba(250,204,21,0.3)]"}`}
           >
             {isUploading ? "Uploading..." : "Upload Image"}
           </button>
 
+        </div>
+
+        {/* ========== UPLOADED GALLERY IMAGES ========== */}
+        <div className="bg-white/[0.06] backdrop-blur-xl border border-white/10 rounded-2xl p-6 md:p-8 mt-8 transition-all duration-300 hover:border-white/15">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-emerald-400/10 rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2 className="text-white text-xl md:text-2xl font-bold">
+              Uploaded Gallery Images
+            </h2>
+          </div>
+
+          {galleryLoading ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="bg-white/[0.02] border border-white/5 rounded-xl p-4 animate-pulse">
+                  <div className="w-full h-48 bg-white/5 rounded-lg mb-4"></div>
+                  <div className="h-4 bg-white/5 rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-white/5 rounded w-1/2 mb-4"></div>
+                  <div className="h-10 bg-white/5 rounded w-full"></div>
+                </div>
+              ))}
+            </div>
+          ) : galleryImages.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-400">No gallery images found.</p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {galleryImages.map((img) => (
+                <div key={img.id} className="bg-white/[0.04] border border-white/10 rounded-xl p-4 flex flex-col justify-between transition-all duration-300 hover:border-white/20 animate-[fadeIn_0.2s_ease-out]">
+                  <div>
+                    <div className="relative w-full h-48 rounded-lg overflow-hidden mb-4 bg-black/25">
+                      <img
+                        src={img.image_url}
+                        alt={img.title || "Gallery"}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <h3 className="text-white font-bold text-lg line-clamp-1">{img.title || "Untitled"}</h3>
+                    {img.description && (
+                      <p className="text-gray-400 text-sm mt-1 line-clamp-2 leading-relaxed">{img.description}</p>
+                    )}
+                    {img.createdAt && (
+                      <p className="text-gray-500 text-xs mt-2">
+                        Uploaded: {new Date(img.createdAt.seconds * 1000).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => openGalleryDeleteModal(img)}
+                    className="w-full bg-red-500/10 hover:bg-red-500 border border-red-500/20 hover:border-red-500 text-red-400 hover:text-white font-semibold py-2.5 rounded-lg mt-4 transition-all duration-300 text-sm flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete Image
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ========== TAB NAVIGATION ========== */}
