@@ -65,6 +65,7 @@
 // export default Gallery
 
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
 
@@ -172,12 +173,32 @@ function Gallery() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
 
                   {/* Text */}
-                  <div className="absolute bottom-6 left-6">
+                  <div className="absolute bottom-6 left-6 right-6">
                     <h3 className="text-white text-2xl font-bold">
                       {image.title}
                     </h3>
 
-                    <p className="text-yellow-400 mt-2">{image.description}</p>
+                    {image.description && (
+                      <p
+                        className="text-yellow-400 mt-2"
+                        style={{
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {image.description}
+                      </p>
+                    )}
+
+                    <Link
+                      to={`/gallery/${image.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-block mt-3 text-sm text-white/70 hover:text-white underline underline-offset-2 duration-300"
+                    >
+                      View Details →
+                    </Link>
                   </div>
                 </div>
               </SwiperSlide>

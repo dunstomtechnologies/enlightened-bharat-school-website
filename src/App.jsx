@@ -18,6 +18,7 @@ import Academics from "./pages/Academics";
 import Admissions from "./pages/Admissions";
 import Admin from "./pages/Admin";
 import Contact from "./pages/Contact";
+import GalleryDetails from "./pages/GalleryDetails";
 
 // Admin Auth Pages
 import AdminLogin from "./pages/AdminLogin";
@@ -54,6 +55,7 @@ function AppContent() {
 
         {/* Gallery */}
         <Route path="/gallery" element={<Gallery />} />
+        <Route path="/gallery/:id" element={<GalleryDetails />} />
 
         {/* Academics */}
         <Route path="/academics" element={<Academics />} />
